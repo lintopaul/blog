@@ -46,6 +46,17 @@ func TestBlogService(t *testing.T) {
 		t.Fatalf("read post: expected %s, got %s", createdPost.PostId, readPost.PostId)
 	}
 
+	// Test ListPost
+	listPost, err := client.ListPosts(ctx, &pb.EmptyRequest{})
+	if err != nil {
+		t.Fatalf("could not receive posts: %v", err)
+	}
+
+	_, err = listPost.Recv()
+	if err != nil {
+		t.Fatalf("could not receive posts: %v", err)
+	}
+
 	// Test UpdatePost
 	updatedPost, err := client.UpdatePost(ctx, &pb.Post{
 		PostId:          createdPost.PostId,

@@ -22,8 +22,17 @@ service BlogService {
   rpc ReadPost(PostIdRequest) returns (Post);
   rpc UpdatePost(Post) returns (Post);
   rpc DeletePost(PostIdRequest) returns (DeleteResponse);
+
+  // new RPC method to retrieve all posts
+  rpc ListPosts(EmptyRequest) returns (stream PostList);
 }
 
 message DeleteResponse {
   bool success = 1;
+}
+
+message EmptyRequest {}
+
+message PostList {
+  repeated Post posts = 1;
 }

@@ -11,14 +11,14 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-    "google.golang.org/grpc/status"
+	"google.golang.org/grpc/status"
 )
 
 // server struct holds the data and implements the gRPC server interface
 type server struct {
 	posts map[string]*pb.Post // Map to store posts (simulating a simple in-memory database)
 	mu    sync.RWMutex        // Mutex for thread safety
-	pb.UnimplementedBlogServiceServer 
+	pb.UnimplementedBlogServiceServer
 }
 
 // CreatePost creates a new blog post
@@ -48,6 +48,27 @@ func (s *server) ReadPost(ctx context.Context, req *pb.PostIdRequest) (*pb.Post,
 
 	log.Printf("Post retrieved: %+v", post)
 	return post, nil
+}
+
+// ListPosts is a server streaming RPC to list all posts
+func (s *server) ListPosts(req *pb.EmptyRequest, stream pb.BlogService_ListPostsServer) error {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
+    // Construct a PostList message to hold the list of posts
+    postList := &pb.PostList{}
+
+    // Iterate over the map of posts and add each post to the PostList
+    for _, post := range s.posts {
+        postList.Posts = append(postList.Posts, post)
+    }
+
+    // Send the PostList through the stream
+    if err := stream.Send(postList); err != nil {
+        return err
+    }
+
+    return nil
 }
 
 // UpdatePost updates an existing blog post
